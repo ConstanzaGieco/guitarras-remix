@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import {
     Meta,
     Links,
@@ -81,9 +82,58 @@ function Document({children}){
 //IMPACTANDO EN APP
 export default function App(){
 
+    //remix se ejecuta tanto en el cliente como en el servidor, la parte que se ejecuta en servidor no tiene el objeto de window. Entonces lo que estamos diciendo acá es si el codigo es del servidor que no haga nada null, pero si es del navegador que agregue el LS
+    const carritoLS = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('carrito')) ?? [] : null
+    const [carrito, setCarrito] = useState(carritoLS)
+
+    //Con remix se recomienda que al llamar localstorage se utilice useEffect
+    useEffect(()=>{
+        localStorage.setItem('carrito', JSON.stringify(carrito))
+    },[carrito])
+
+    const agregarCarrito = guitarra => {
+        if(carrito.some(guitarraState => guitarraState.id === guitarra.id)){
+            //iterar sobre el arreglo, e identificar el elemento duplicado
+            const carritoActualizado = carrito.map(guitarraState => {
+                if(guitarraState.id === guitarra.id){
+                    //reescribir la cantidad en funcion a la ultima seleccion de usuario (usar += si quiero que sea acumulativo)
+                    guitarraState.cantidad = guitarra.cantidad
+                }
+                return guitarraState
+            })
+            //añadir al carrito
+            setCarrito(carritoActualizado)
+        } else{
+            //registro nuevo, agregar al carrito
+            setCarrito([...carrito, guitarra])
+        }
+    }
+
+    const actualizarCantidad = guitarra => {
+        const carritoActualizado = carrito.map(guitarraState => {
+            if(guitarraState.id === guitarra.id){
+                guitarraState.cantidad = guitarra.cantidad
+            }
+            return guitarraState
+        })
+        setCarrito(carritoActualizado)
+    }
+
+    const eliminarGuitarra = id => {
+        const carritoActualizado = carrito.filter(guitarraState => guitarraState.id !== id)
+        setCarrito(carritoActualizado)
+    }
+
     return(
         <Document>
-            <Outlet />
+            <Outlet 
+                context={{
+                    agregarCarrito,
+                    carrito,
+                    actualizarCantidad,
+                    eliminarGuitarra
+                }}
+            />
         </Document>
     )
 }

@@ -9,9 +9,6 @@ import stylesGuitarras from '~/styles/guitarras.css'
 import stylesPosts from '~/styles/blog.css'
 import stylesCurso from '~/styles/curso.css'
 
-export function meta(){
-
-}
 
 export function links(){
     return [
